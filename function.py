@@ -40,6 +40,7 @@ import graphviz
 from sklearn.tree import export_graphviz
 from sklearn.metrics import roc_curve, auc
 
+
 def percntage_missing(df):
     # '''prints out columns with missing values with its %'''
     for col in df.columns:
@@ -120,11 +121,16 @@ def remove_outlier_iqr(data_frame):
 
 ##Historgram
 def show_histogram(data_frame):
-    for col in data_frame:
-        plt.hist(data_frame[col])
-        plt.title("Detecting outliers using Histogram")
-        plt.xlabel(col)
-        plt.show()
+    data_frame.hist(bins=20, figsize=(10, 10))
+    # show graph
+    plt.show()
+
+
+##Seaborn
+def show_seaborn(data_frame):
+    sb.pairplot(df_duplicate)
+    # show graph
+    plt.show()
 
 
 ## Convert Qualitative data to dummy data
