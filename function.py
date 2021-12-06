@@ -135,6 +135,7 @@ def show_seaborn(data_frame):
 
 ## Convert Qualitative data to dummy data
 def convert_columns_to_dummy_data(df, column_name):
-    dummy_df = pd.get_dummies(df[column_name])
-    df = pd.concat([df, dummy_df], axis=1)
-    return df
+    pd.get_dummies(df, columns=['gender'], drop_first=True)
+    # dummy_df = pd.get_dummies(df[column_name])
+    # df = pd.concat([df, dummy_df], axis=1)
+    # return df
