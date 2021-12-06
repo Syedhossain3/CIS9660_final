@@ -19,7 +19,7 @@ pd.set_option('display.width', 2000)
 
 ##Visualization
 ##Seaborn
-
+show_seaborn(df_duplicate)
 
 ##Histogram
 show_histogram(df_duplicate)
