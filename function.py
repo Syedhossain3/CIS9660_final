@@ -16,7 +16,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn import tree
 from IPython.display import display
-import seaborn as sns
+import seaborn as sb
 import tensorflow as tf
 from tensorflow import keras
 import matplotlib.pyplot as plt
@@ -133,9 +133,15 @@ def show_seaborn(data_frame):
     plt.show()
 
 
+## heatmap
+def show_heatmap(data_frame):
+    # correlation by visualization
+    plt.figure(figsize=[18, 7])
+    # plot correlation
+    sb.heatmap(data_frame.corr(), annot=True)
+    plt.show()
+
+
 ## Convert Qualitative data to dummy data
-def convert_columns_to_dummy_data(df, column_name):
-    pd.get_dummies(df, columns=['gender'], drop_first=True)
-    # dummy_df = pd.get_dummies(df[column_name])
-    # df = pd.concat([df, dummy_df], axis=1)
-    # return df
+def convert_columns_to_dummy_data(data_frame, column_name):
+    pd.get_dummies(data_frame, columns=[column_name], drop_first=True)

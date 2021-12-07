@@ -19,10 +19,13 @@ pd.set_option('display.width', 2000)
 
 ##Visualization
 ##Seaborn
-show_seaborn(df_duplicate)
+# show_seaborn(df_duplicate)
 
 ##Histogram
-show_histogram(df_duplicate)
+# show_histogram(df_duplicate)
+
+## heatmap
+# show_heatmap(df_duplicate)
 
 ##convert qualitative data to dummy data
 df_duplicate = convert_columns_to_dummy_data(df_duplicate, "type")
