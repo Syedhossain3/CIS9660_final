@@ -29,9 +29,6 @@ pd.set_option('display.width', 2000)
 
 ##convert qualitative data to dummy data
 df_duplicate = convert_columns_to_dummy_data(df_duplicate, "type")
-print(df_duplicate.head())
-#drop collaborative field
-# df_duplicate.drop(["type"], inplace=True, axis=1)
 
 ## missing percentage
 # get_missing_percentage(df_duplicate)

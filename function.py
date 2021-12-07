@@ -144,4 +144,5 @@ def show_heatmap(data_frame):
 
 ## Convert Qualitative data to dummy data
 def convert_columns_to_dummy_data(data_frame, column_name):
-    pd.get_dummies(data_frame, columns=[column_name], drop_first=True)
+    data_frame = pd.get_dummies(data_frame, columns=[column_name], drop_first=True)
+    return data_frame
