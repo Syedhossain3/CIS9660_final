@@ -8,14 +8,13 @@ import sys
 
 ## Load dataframe
 df = pd.read_csv('winequalityN.csv')
-# print(df.shape)
+
 ## create duplicate datagrame
 df_duplicate = df.copy()
 
 ## set Pycharm output windows to visualize all columns
 pd.set_option('display.max_columns', 20)
 pd.set_option('display.width', 2000)
-
 
 ##Visualization
 ##Seaborn
@@ -40,25 +39,32 @@ df_duplicate = df_duplicate.dropna()
 #
 ##REname column name
 df_duplicate.columns = df_duplicate.columns.str.replace(' ', '_')
-print(df_duplicate.describe())
-#
-# ## Showing Boxplot before removing outlier on each column
-# # detecting_outlier_boxplot(df_duplicate)
-#
-# # show_histogram(df_duplicate)
-# ## Show ZScore outlier on each column
+# print(df_duplicate.describe())
+
+##Finding error base on Heap map. check if more than .7
+correlation_visualization_err_detection(df_duplicate)
+# total_sulfur_dioxide
+##drop
+df_duplicate.drop('total sulfur dioxide',axis = 1)
+
+
+## Showing Boxplot before removing outlier on each column
+# detecting_outlier_boxplot(df_duplicate)
+
+# show_histogram(df_duplicate)
+## Show ZScore outlier on each column
 # # detect_outliers_zscore(df_duplicate)
 #
-# ## Remove outlier using Z-Score
-# df_duplicate = remove_outliers_zscore(df_duplicate)
+## Remove outlier using Z-Score
+df_duplicate = remove_outliers_zscore(df_duplicate)
 # # print(df_duplicate.shape)
 # # (5955, 12)
 #
 # ## Show IQR outlier on each column
 # # detect_outlier_IQR(df_duplicate)
 #
-# ## Remove outlier using IQR
-# df_duplicate = remove_outlier_iqr(df_duplicate)
+## Remove outlier using IQR
+df_duplicate = remove_outlier_iqr(df_duplicate)
 # # print(df_duplicate.shape)
 # # (4622, 12)
 #

@@ -146,3 +146,14 @@ def show_heatmap(data_frame):
 def convert_columns_to_dummy_data(data_frame, column_name):
     data_frame = pd.get_dummies(data_frame, columns=[column_name], drop_first=True)
     return data_frame
+
+
+##Correlation Visualization Error Detection
+def correlation_visualization_err_detection(data_frame):
+    colm = []
+    # loop for columns
+    for i in range(len(data_frame.corr().keys())):
+        for j in range(i):
+            if abs(data_frame.corr().iloc[i, j]) > 0.7:
+                colm = data_frame.corr().columns[i]
+                return print(colm)
