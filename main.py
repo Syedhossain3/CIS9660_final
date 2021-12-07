@@ -45,8 +45,9 @@ df_duplicate.columns = df_duplicate.columns.str.replace(' ', '_')
 correlation_visualization_err_detection(df_duplicate)
 # total_sulfur_dioxide
 ##drop
-df_duplicate.drop('total sulfur dioxide',axis = 1)
+df_duplicate.drop('total_sulfur_dioxide', inplace=True, axis=1)
 
+print(df_duplicate.head(20))
 
 ## Showing Boxplot before removing outlier on each column
 # detecting_outlier_boxplot(df_duplicate)
@@ -72,34 +73,39 @@ df_duplicate = remove_outlier_iqr(df_duplicate)
 # ## Showing Boxplot after removing outlier on each column
 # # detecting_outlier_boxplot(df_duplicate)
 #
+##Create a new dummy code
+# df_duplicate['best_quality']=[1 if x>=7 else 0 for x in df_duplicate.quality]
+# print(df_dummies)
+df_duplicate['best_quality'] = np.where(df_duplicate.quality >= 7, 1, 0)
+
 # Index(['fixed_acidity', 'volatile_acidity', 'citric_acid', 'residual_sugar', 'chlorides', 'free_sulfur_dioxide',
-#        'total_sulfur_dioxide', 'density', 'pH', 'sulphates', 'alcohol', 'quality'],
+#        'density', 'pH', 'sulphates', 'alcohol', 'quality', 'type_white'],
 #       dtype='object')
 # predictors = ['fixed_acidity', 'volatile_acidity', 'citric_acid', 'residual_sugar', 'chlorides', 'free_sulfur_dioxide',
-#               'total_sulfur_dioxide', 'density', 'pH', 'sulphates', 'alcohol', 'red', 'white']
+#               'density', 'pH', 'sulphates', 'alcohol', 'type_white']
 # outcome = 'quality'
-
-# ## Partition the data( for supervised tasks)
+#
+# # ## Partition the data( for supervised tasks)
 # train, validate = train_test_split(df_duplicate, test_size=0.25, random_state=1)
-# print("Training : ", train.shape)
-# print("Validation :  ", validate.shape)
-
-# # training (50)
+# # print("Training : ", train.shape)
+# # print("Validation :  ", validate.shape)
+#
+# # # training (50)
 # train, temp = train_test_split(df_duplicate, test_size=0.3, random_state=1)
 # validate, test = train_test_split(temp, test_size=0.3, random_state=1)
 #
 # X = train[predictors]
 # y = train[outcome]
-
+#
 # train_X, valid_X, train_y, valid_y = train_test_split(X, y, test_size=0.3, random_state=1)
-
-# # Logistic Regression
+#
+# # # Logistic Regression
 # logit_reg = LogisticRegression(penalty="l2", C=1e42, solver='liblinear', class_weight='balanced')
 # logit_reg = LogisticRegression()
-
+#
 # logit_reg.fit(train_X, train_y)
-
+#
 # score = logit_reg.score(train_X, train_y)
 # print(score)
-
+#
 # print(pd.DataFrame({'coeff': logit_reg.coef_[0]}, index=X.columns))
