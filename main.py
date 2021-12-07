@@ -39,8 +39,8 @@ df_duplicate = df_duplicate.dropna()
 # (6463, 14)
 #
 ##REname column name
-# df_duplicate.columns = df_duplicate.columns.str.replace(' ', '_')
-# print(df_duplicate.describe())
+df_duplicate.columns = df_duplicate.columns.str.replace(' ', '_')
+print(df_duplicate.describe())
 #
 # ## Showing Boxplot before removing outlier on each column
 # # detecting_outlier_boxplot(df_duplicate)
