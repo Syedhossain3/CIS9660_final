@@ -76,7 +76,7 @@ df_duplicate = remove_outlier_iqr(df_duplicate)
 ##Create a new dummy code
 # df_duplicate['best_quality']=[1 if x>=7 else 0 for x in df_duplicate.quality]
 # print(df_dummies)
-df_duplicate['best_quality'] = np.where(df_duplicate.quality >= 7, 1, 0)
+# df_duplicate['best_quality'] = np.where(df_duplicate.quality >= 7, 1, 0)
 
 # Index(['fixed_acidity', 'volatile_acidity', 'citric_acid', 'residual_sugar', 'chlorides', 'free_sulfur_dioxide',
 #        'density', 'pH', 'sulphates', 'alcohol', 'quality', 'type_white'],
