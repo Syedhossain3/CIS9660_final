@@ -74,7 +74,8 @@ df_duplicate = remove_outlier_iqr(df_duplicate)
 # # detecting_outlier_boxplot(df_duplicate)
 #
 ##Create a new dummy code
-df_duplicate['best_quality']=[1 if x>=7 else 0 for x in df_duplicate.quality]
+print(df_duplicate
+# df_dc = pd.get_dummies(df, columns=['ColumnToDummyCode'])=[1 if x>=7 else 0 for x in df_duplicate.quality]
 # print(df_dummies)
 # df_duplicate['best_quality'] = np.where(df_duplicate.quality >= 7, 1, 0)
 
