@@ -157,3 +157,11 @@ def correlation_visualization_err_detection(data_frame):
             if abs(data_frame.corr().iloc[i, j]) > 0.7:
                 colm = data_frame.corr().columns[i]
                 return print(colm)
+
+
+##Normatize
+def normalize_data(data_frame):
+    norm = MinMaxScaler()
+    norm_fit = norm.fit(data_frame)
+    return norm_fit.transform(data_frame)
+
