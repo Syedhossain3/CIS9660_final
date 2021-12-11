@@ -165,3 +165,34 @@ def normalize_data(data_frame):
     norm_fit = norm.fit(data_frame)
     return norm_fit.transform(data_frame)
 
+
+##Model Matrix
+def model_matrix(data_frame_train_y, data_frame_valid_y, object_train, object_valid):
+    print("Accuracy on train is:", accuracy_score(data_frame_train_y, object_train))
+    print("Accuracy on test is:", accuracy_score(data_frame_valid_y, object_valid))
+    print("Precision_score train is:", precision_score(data_frame_train_y, object_train))
+    print("Precision_score on test is:", precision_score(data_frame_valid_y, object_valid))
+    print("Recall_score on train is:", recall_score(data_frame_train_y, object_train))
+    print("Recall_score on test is:", recall_score(data_frame_valid_y, object_valid))
+    print("f1_score on train is:", f1_score(data_frame_train_y, object_train))
+    print("f1_score on test is:", f1_score(data_frame_valid_y, object_valid))
+
+
+## Visualization DecisionTree
+def visualization_decision_tree(object_tree, data_frame):
+    dot_data = tree.export_graphviz(object_tree,
+                                    feature_names=data_frame.columns,
+                                    out_file=None,
+                                    filled=True,
+                                    rounded=True)
+    graph = pydotplus.graph_from_dot_data(dot_data)
+    colors = ('turquoise', 'orange')
+    edges = collections.defaultdict(list)
+    for edge in graph.get_edge_list():
+        edges[edge.get_source()].append(int(edge.get_destination()))
+    for edge in edges:
+        edges[edge].sort()
+        for i in range(2):
+            dest = graph.get_node(str(edges[edge][i]))[0]
+            dest.set_fillcolor(colors[i])
+    graph.write_png('tree.png')

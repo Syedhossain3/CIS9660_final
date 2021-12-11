@@ -1,5 +1,6 @@
+import collections
+import pydotplus
 from function import *
-from matplotlib import pyplot as plt
 import seaborn as sb
 from function import *
 import pandas as pd
@@ -79,10 +80,8 @@ predictors = ['fixed_acidity', 'volatile_acidity', 'citric_acid', 'residual_suga
               'density', 'pH', 'sulphates', 'alcohol', 'type_white']
 outcome = 'top_quality'
 
-# ## Partition the data( for supervised tasks)
+# ## Partition the data
 train, validate = train_test_split(df_duplicate, test_size=0.25, random_state=40)
-# print("Training : ", train.shape)
-# print("Validation :  ", validate.shape)
 
 # # training (50)
 train, temp = train_test_split(df_duplicate, test_size=0.3, random_state=40)
@@ -90,12 +89,8 @@ validate, test = train_test_split(temp, test_size=0.3, random_state=40)
 
 X = train[predictors]
 y = train[outcome]
-#
+
 train_X, valid_X, train_y, valid_y = train_test_split(X, y, test_size=0.3, random_state=1)
-
-# print(train_X.shape)
-# print(train_y)
-
 
 ## Normalization
 # We do normalization on numerical data because our data is unbalanced it means the
@@ -105,124 +100,78 @@ train_X, valid_X, train_y, valid_y = train_test_split(X, y, test_size=0.3, rando
 
 
 # # Logistic Regression
-logit_reg = LogisticRegression(penalty="l2", C=1e42, solver='liblinear', class_weight='balanced')
-logit_reg = LogisticRegression()
+logistic_regression = LogisticRegression(penalty="l2", C=1e42, solver='liblinear', class_weight='balanced')
+logistic_regression.fit(train_X, train_y)
 
-logit_reg.fit(train_X, train_y)
-
-score = logit_reg.score(train_X, train_y)
+score = logistic_regression.score(train_X, train_y)
 print(score)
+print(pd.DataFrame({'coeff': logistic_regression.coef_[0]}, index=X.columns))
 
-print(pd.DataFrame({'coeff': logit_reg.coef_[0]}, index=X.columns))
-# # Model Metrics
-classificationSummary(train_y, logit_reg.predict(train_X))
-classificationSummary(valid_y, logit_reg.predict(valid_X))
-# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-lr_prediction_train = logit_reg.predict_proba(train_X)[:, 1] > 0.5
-lr_prediction_valid = logit_reg.predict_proba(valid_X)[:, 1] > 0.5
-print("LR Accuracy on train is:", accuracy_score(train_y, lr_prediction_train))
-print("LR Accuracy on test is:", accuracy_score(valid_y, lr_prediction_valid))
-print("LR Precision_score train is:", precision_score(train_y, lr_prediction_train, average='micro'))
-print("LR Precision_score on test is:", precision_score(valid_y, lr_prediction_valid, average='micro'))
-print("LR Recall_score on train is:", recall_score(train_y, lr_prediction_train, average='micro'))
-print("LR Recall_score on test is:", recall_score(valid_y, lr_prediction_valid, average='micro'))
-print("LR f1_score on train is:", f1_score(train_y, lr_prediction_train, average='micro'))
-print("LR f1_score on test is:", f1_score(valid_y, lr_prediction_valid, average='micro'))
+## Classification Summery
+classificationSummary(train_y, logistic_regression.predict(train_X))
+classificationSummary(valid_y, logistic_regression.predict(valid_X))
 
-# # Decision Tree
-DecisionTree = DecisionTreeClassifier(max_depth=4)
-DecisionTree.fit(train_X, train_y)
-tree.plot_tree(DecisionTree, feature_names=train_X.columns)
-plt.show()
+## Model Metrics
+logistic_regression_prediction_train = logistic_regression.predict_proba(train_X)[:, 1] > 0.5
+logistic_regression_prediction_valid = logistic_regression.predict_proba(valid_X)[:, 1] > 0.5
+model_matrix(train_y, valid_y, logistic_regression_prediction_train, logistic_regression_prediction_valid)
+
+## Decision Tree Model
+decision_tree = DecisionTreeClassifier(max_depth=4)
+decision_tree.fit(train_X, train_y)
 
 # plotDecisionTree(DecisionTree, feature_names=train_X.columns)
+# Visualize data
+visualization_decision_tree(decision_tree, train_X)
 
+importances = DecisionTree.feature_importances_
+im = pd.DataFrame({'feature': train_X.columns, 'importance': importances})
+im = im.sort_values('importance', ascending=False)
+print(im)
 
-#
-# # # dot_data = export_graphviz(DecisionTree, filled=True, rounded=True,
-# # #                                     class_names=['Setosa',
-# # #                                                 'Versicolor',
-# # #                                                 'Virginica'],
-# # #                                     feature_names=['predictors'],
-# # #                                     out_file=None)
-# # # graph = graph_from_dot_data(dot_data)
-# # # graph.write_png('tree.png')
-# # # # graph = graphviz.Source(DecisionTree, format="png")
-# # # # graph.render("decision_tree_graphivz")
-# # #
-# # # # dot_data = StringIO()
-# # # # export_graphviz(DecisionTree, out_file=dot_data,
-# # # #                 filled=True, rounded=True,
-# # # #                 special_characters=True, feature_names = predictors, class_names=['0', '1'])
-# # # # graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
-# # # # graph.write_png('wine.png')
-# # # # Image(graph.create_png())
-# # #
-# importances = DecisionTree.feature_importances_
-# # #
-# im = pd.DataFrame({'feature': train_X.columns, 'importance': importances})
-# im = im.sort_values('importance', ascending=False)
-# print(im)
-# # #
-# # #
-# dt_prediction_train = DecisionTree.predict(train_X)
-# dt_prediction_valid = DecisionTree.predict(valid_X)
-#
-# print("DT Accuracy score on train is:", accuracy_score(train_y, dt_prediction_train))
-# print("DT Accuracy score on test is:", accuracy_score(valid_y, dt_prediction_valid))
-# print("DT Precision score on train is:", precision_score(train_y, dt_prediction_train, average='micro'))
-# print("DT Precision score on test is:", precision_score(valid_y, dt_prediction_valid, average='micro'))
-# print("DT Recall score on train is:", recall_score(train_y, dt_prediction_train, average='micro'))
-# print("DT Recall score on test is:", recall_score(valid_y, dt_prediction_valid, average='micro'))
-# print("DT F1 score on train is:", f1_score(train_y, dt_prediction_train, average='micro'))
+## Model Matrix
+decision_tree_prediction_train = decision_tree.predict(train_X)
+decision_tree_prediction_valid = decision_tree.predict(valid_X)
+model_matrix(train_y, valid_y, decision_tree_prediction_train, decision_tree_prediction_valid)
 
-#  # # #Random forest
-rf = RandomForestClassifier(random_state=0)
-cc_rf = rf.fit(train_X.values, train_y.values.ravel())
-rf_prediction_train = cc_rf.predict(train_X)
-rf_prediction_valid = cc_rf.predict(valid_X)
-# #
-# print("RF_Accuracy on train is:",accuracy_score(train_y,rf_prediction_train))
-# print("RF_Accuracy on test is:",accuracy_score(valid_y,rf_prediction_valid))
-# print("RF_Precision_score train is:",precision_score(train_y,rf_prediction_train, average='micro'))
-# print("RF_Precision_score on test is:",precision_score(valid_y,rf_prediction_valid, average='micro'))
-# print("RF_Recall_score on train is:",recall_score(train_y,rf_prediction_train, average='micro'))
-# print("RF_Recall_score on test is:",recall_score(valid_y,rf_prediction_valid, average='micro'))
-# print("RF_f1_score on train is:",f1_score(train_y,rf_prediction_train, average='micro'))
-# print("RF_f1_score on test is:",f1_score(valid_y,rf_prediction_valid, average='micro'))
+## #Random forest
+random_forest = RandomForestClassifier(random_state=0)
+random_forest.fit(train_X.values, train_y.values.ravel())
 
-gbm = GradientBoostingClassifier(random_state=0)
-gbm.fit(train_X, train_y)
-gbm.predict(valid_X[:2])
-importances = list(zip(gbm.feature_importances_, train_X.columns))
+## Model Matrix
+random_forest_prediction_train = random_forest.predict(train_X)
+random_forest_prediction_valid = random_forest.predict(valid_X)
+model_matrix(train_y, valid_y, random_forest_prediction_train, random_forest_prediction_valid)
+
+## Gradient Boosting
+gradient_boosting = GradientBoostingClassifier(random_state=0)
+gradient_boosting.fit(train_X, train_y)
+gradient_boosting.predict(valid_X[:2])
+
+importances = list(zip(gradient_boosting.feature_importances_, train_X.columns))
 pd.DataFrame(importances, index=[x for (_, x) in importances]).sort_values(by=0, ascending=False).plot(kind='bar',
                                                                                                        color='b',
-                                                                                                       figsize=(20, 8))
-# plt.show()
-gbt_prediction_train = gbm.predict(train_X)
-gbt_prediction_valid = gbm.predict(valid_X)
+                                                                                                      figsize=(20, 8))
+plt.show()
 
-print("Accuracy on train is:", accuracy_score(train_y, gbt_prediction_train))
-print("Accuracy on test is:", accuracy_score(valid_y, gbt_prediction_valid))
-print("Precision_score train is:", precision_score(train_y, gbt_prediction_train))
-print("Precision_score on test is:", precision_score(valid_y, gbt_prediction_valid))
-print("Recall_score on train is:", recall_score(train_y, gbt_prediction_train))
-print("Recall_score on test is:", recall_score(valid_y, gbt_prediction_valid))
-print("f1_score on train is:", f1_score(train_y, gbt_prediction_train))
-print("f1_score on test is:", f1_score(valid_y, gbt_prediction_valid))
+## Model Matrix
+gradient_boosting_prediction_train = gradient_boosting.predict(train_X)
+gradient_boosting_prediction_valid = gradient_boosting.predict(valid_X)
+model_matrix(train_y, valid_y, gradient_boosting_prediction_train, gradient_boosting_prediction_valid)
 
-# LR
-fpr, tpr, thresholds = roc_curve(train_y, lr_prediction_train)
+## Baseline AUC analysis
+# logistic_regression
+fpr, tpr, thresholds = roc_curve(train_y, logistic_regression_prediction_train)
 print("LogisticRegression Train: ", str(auc(fpr, tpr)))
-fpr, tpr, thresholds = roc_curve(valid_y, lr_prediction_valid)
+fpr, tpr, thresholds = roc_curve(valid_y, logistic_regression_prediction_valid)
 print("LogisticRegression Valid: ", str(auc(fpr, tpr)), "\n")
 # RF
-fpr, tpr, thresholds = roc_curve(train_y, rf_prediction_train)
+fpr, tpr, thresholds = roc_curve(train_y, random_forest_prediction_train)
 print("RandomForest Train: ", str(auc(fpr, tpr)))
-fpr, tpr, thresholds = roc_curve(valid_y, rf_prediction_valid)
+fpr, tpr, thresholds = roc_curve(valid_y, random_forest_prediction_valid)
 print("RandomForest Valid: ", str(auc(fpr, tpr)), "\n")
 # GBT
-fpr, tpr, thresholds = roc_curve(train_y, gbt_prediction_train)
+fpr, tpr, thresholds = roc_curve(train_y, gradient_boosting_prediction_train)
 print("GradientBoostedTree Train: ", str(auc(fpr, tpr)))
-fpr, tpr, thresholds = roc_curve(valid_y, gbt_prediction_valid)
+fpr, tpr, thresholds = roc_curve(valid_y, gradient_boosting_prediction_valid)
 print("GradientBoostedTree Valid: ", str(auc(fpr, tpr)), "\n")
