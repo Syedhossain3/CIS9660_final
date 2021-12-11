@@ -1,6 +1,8 @@
 import math
 import matplotlib.pyplot as plt
 import csv
+import collections
+import pydotplus
 from ast import Index
 from json import encoder
 from sklearn.linear_model import LogisticRegression
@@ -39,14 +41,6 @@ from sklearn.metrics import plot_roc_curve
 import graphviz
 from sklearn.tree import export_graphviz
 from sklearn.metrics import roc_curve, auc
-
-
-def percntage_missing(df):
-    # '''prints out columns with missing values with its %'''
-    for col in df.columns:
-        pct = df[col].isna().mean() * 100
-        if pct != 0:
-            print('{} => {}%'.format(col, round(pct, 2)))
 
 
 def get_missing_percentage(df):
@@ -102,7 +96,7 @@ def detect_outliers_zscore(data_frame):
 
 
 ##IQR for each column
-def detect_outlier_IQR(data_frame):
+def detect_outlier_iqr(data_frame):
     q1 = data_frame.quantile(0.25)
     q3 = data_frame.quantile(0.75)
     iqr = q3 - q1
@@ -195,4 +189,4 @@ def visualization_decision_tree(object_tree, data_frame):
         for i in range(2):
             dest = graph.get_node(str(edges[edge][i]))[0]
             dest.set_fillcolor(colors[i])
-    graph.write_png('tree.png')
+    graph.write_png('decision_tree.png')

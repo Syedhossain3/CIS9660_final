@@ -1,5 +1,4 @@
-import collections
-import pydotplus
+
 from function import *
 import seaborn as sb
 from function import *
@@ -124,7 +123,7 @@ decision_tree.fit(train_X, train_y)
 # Visualize data
 visualization_decision_tree(decision_tree, train_X)
 
-importances = DecisionTree.feature_importances_
+importances = decision_tree.feature_importances_
 im = pd.DataFrame({'feature': train_X.columns, 'importance': importances})
 im = im.sort_values('importance', ascending=False)
 print(im)
@@ -148,8 +147,8 @@ gradient_boosting = GradientBoostingClassifier(random_state=0)
 gradient_boosting.fit(train_X, train_y)
 gradient_boosting.predict(valid_X[:2])
 
-importances = list(zip(gradient_boosting.feature_importances_, train_X.columns))
-pd.DataFrame(importances, index=[x for (_, x) in importances]).sort_values(by=0, ascending=False).plot(kind='bar',
+gradient_boosting_importances = list(zip(gradient_boosting.feature_importances_, train_X.columns))
+pd.DataFrame(importances, index=[x for (_, x) in gradient_boosting_importances]).sort_values(by=0, ascending=False).plot(kind='bar',
                                                                                                        color='b',
                                                                                                       figsize=(20, 8))
 plt.show()
@@ -165,12 +164,12 @@ fpr, tpr, thresholds = roc_curve(train_y, logistic_regression_prediction_train)
 print("LogisticRegression Train: ", str(auc(fpr, tpr)))
 fpr, tpr, thresholds = roc_curve(valid_y, logistic_regression_prediction_valid)
 print("LogisticRegression Valid: ", str(auc(fpr, tpr)), "\n")
-# RF
+# random_forest
 fpr, tpr, thresholds = roc_curve(train_y, random_forest_prediction_train)
 print("RandomForest Train: ", str(auc(fpr, tpr)))
 fpr, tpr, thresholds = roc_curve(valid_y, random_forest_prediction_valid)
 print("RandomForest Valid: ", str(auc(fpr, tpr)), "\n")
-# GBT
+# gradient_boosting
 fpr, tpr, thresholds = roc_curve(train_y, gradient_boosting_prediction_train)
 print("GradientBoostedTree Train: ", str(auc(fpr, tpr)))
 fpr, tpr, thresholds = roc_curve(valid_y, gradient_boosting_prediction_valid)
