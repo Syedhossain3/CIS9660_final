@@ -41,6 +41,9 @@ from sklearn.metrics import plot_roc_curve
 import graphviz
 from sklearn.tree import export_graphviz
 from sklearn.metrics import roc_curve, auc
+import sklearn.metrics as metrics
+from sklearn.metrics import plot_roc_curve
+%matplotlib inline
 
 
 def get_missing_percentage(df):
@@ -190,3 +193,26 @@ def visualization_decision_tree(object_tree, data_frame):
             dest = graph.get_node(str(edges[edge][i]))[0]
             dest.set_fillcolor(colors[i])
     graph.write_png('decision_tree.png')
+
+
+## Feature Importance
+def feature_importance(object_importance):
+    pd.DataFrame(object_importance, index=[x for (_, x) in object_importance]).sort_values(by=0, ascending=False).plot(
+        kind='bar', color='b', figsize=(20, 8))
+    plt.show()
+
+
+## Baseline AUC analysis
+def baseline_auc_analysis(data_frame, object_model_prediction, object_model_name):
+    fpr, tpr, thresholds = roc_curve(data_frame, object_model_prediction)
+    if 'Valid' in object_model_name:
+        print(object_model_name + ": ", str(auc(fpr, tpr)), "\n")
+    else:
+        print(object_model_name + ": ", str(auc(fpr, tpr)))
+
+
+#### ROC Curve Analysis
+def roc_curve_analysis(object_model_name, data_frame_x, data_frame_y):
+    object_proba = object_model_name.predict_proba(data_frame_x)[:, 1]
+    object_roc = roc_curve(data_frame_y, object_proba)
+    object_roc = pd.DataFrame(object_roc)

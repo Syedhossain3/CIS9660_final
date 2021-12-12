@@ -9,6 +9,9 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from dmba import plotDecisionTree
 import sys
+import sklearn.metrics as metrics
+from sklearn.metrics import plot_roc_curve
+%matplotlib inline
 
 ## Load dataframe
 df = pd.read_csv('winequalityN.csv')
@@ -102,9 +105,7 @@ train_X, valid_X, train_y, valid_y = train_test_split(X, y, test_size=0.3, rando
 logistic_regression = LogisticRegression(penalty="l2", C=1e42, solver='liblinear', class_weight='balanced')
 logistic_regression.fit(train_X, train_y)
 
-score = logistic_regression.score(train_X, train_y)
-print(score)
-print(pd.DataFrame({'coeff': logistic_regression.coef_[0]}, index=X.columns))
+# print(pd.DataFrame({'coeff': logistic_regression.coef_[0]}, index=X.columns))
 
 ## Classification Summery
 classificationSummary(train_y, logistic_regression.predict(train_X))
@@ -123,10 +124,11 @@ decision_tree.fit(train_X, train_y)
 # Visualize data
 visualization_decision_tree(decision_tree, train_X)
 
-importances = decision_tree.feature_importances_
-im = pd.DataFrame({'feature': train_X.columns, 'importance': importances})
-im = im.sort_values('importance', ascending=False)
-print(im)
+decision_tree_importances = decision_tree.feature_importances_
+# feature_importance(decision_tree_importances)
+# im = pd.DataFrame({'feature': train_X.columns, 'importance': decision_tree_importances})
+# im = im.sort_values('importance', ascending=False)
+# print(im)
 
 ## Model Matrix
 decision_tree_prediction_train = decision_tree.predict(train_X)
@@ -148,10 +150,7 @@ gradient_boosting.fit(train_X, train_y)
 gradient_boosting.predict(valid_X[:2])
 
 gradient_boosting_importances = list(zip(gradient_boosting.feature_importances_, train_X.columns))
-pd.DataFrame(importances, index=[x for (_, x) in gradient_boosting_importances]).sort_values(by=0, ascending=False).plot(kind='bar',
-                                                                                                       color='b',
-                                                                                                      figsize=(20, 8))
-plt.show()
+# feature_importance(gradient_boosting_importances)
 
 ## Model Matrix
 gradient_boosting_prediction_train = gradient_boosting.predict(train_X)
@@ -160,17 +159,60 @@ model_matrix(train_y, valid_y, gradient_boosting_prediction_train, gradient_boos
 
 ## Baseline AUC analysis
 # logistic_regression
-fpr, tpr, thresholds = roc_curve(train_y, logistic_regression_prediction_train)
-print("LogisticRegression Train: ", str(auc(fpr, tpr)))
-fpr, tpr, thresholds = roc_curve(valid_y, logistic_regression_prediction_valid)
-print("LogisticRegression Valid: ", str(auc(fpr, tpr)), "\n")
+baseline_auc_analysis(train_y, logistic_regression_prediction_train, "LogisticRegression Train")
+baseline_auc_analysis(valid_y, logistic_regression_prediction_valid, "LogisticRegression Valid")
+
 # random_forest
-fpr, tpr, thresholds = roc_curve(train_y, random_forest_prediction_train)
-print("RandomForest Train: ", str(auc(fpr, tpr)))
-fpr, tpr, thresholds = roc_curve(valid_y, random_forest_prediction_valid)
-print("RandomForest Valid: ", str(auc(fpr, tpr)), "\n")
+baseline_auc_analysis(train_y, random_forest_prediction_train, "RandomForest Train")
+baseline_auc_analysis(valid_y, random_forest_prediction_valid, "RandomForest Valid")
+
 # gradient_boosting
-fpr, tpr, thresholds = roc_curve(train_y, gradient_boosting_prediction_train)
-print("GradientBoostedTree Train: ", str(auc(fpr, tpr)))
-fpr, tpr, thresholds = roc_curve(valid_y, gradient_boosting_prediction_valid)
-print("GradientBoostedTree Valid: ", str(auc(fpr, tpr)), "\n")
+baseline_auc_analysis(train_y, gradient_boosting_prediction_train, "GradientBoostedTree Train")
+baseline_auc_analysis(valid_y, gradient_boosting_prediction_valid, "GradientBoostedTree Valid")
+
+## ROC Curve Analysis
+roc_curve_analysis(random_forest, valid_X, valid_y)
+roc_curve_analysis(gradient_boosting, valid_X, valid_y)
+
+
+Classifier = [logit_reg, nb, DecisionTree]
+result_table = pd.DataFrame(columns=['classifiers', 'fpr', 'tpr', 'auc'])
+for cls in Classifier:
+    yproba = cls.predict_proba(valid_X)[:, 1]
+    # plot_roc_curve(cls, valid_X, valid_y)
+    fpr, tpr, thresholds = roc_curve(valid_y, yproba)
+
+    auc = roc_auc_score(valid_y, yproba)
+
+    result_table = result_table.append({'classifiers': cls,
+                                        'fpr': fpr,
+                                        'tpr': tpr,
+                                        'auc': auc}, ignore_index=True)
+result_table.set_index('classifiers', inplace=True)
+# result_table.fillna(0)
+fig = plt.figure(figsize=(8, 6))
+
+print(result_table.head())
+
+for i in result_table.index:
+    plt.plot(result_table.loc[i]['fpr'],
+             result_table.loc[i]['tpr'],
+             label=i)
+    # label="{}, AUC={:.3f}".format(i, result_table.loc[i]['auc']))
+
+plt.plot(rf_roc.loc[0, :], rf_roc.loc[1, :], label="Random Forest")
+plt.plot(gbm_roc.loc[0, :], gbm_roc.loc[1, :], label="Gradiant Boosted Tree")
+plt.plot(nn_roc.loc[0, :], nn_roc.loc[1, :], label="Neural Network")
+
+plt.plot([0, 1], [0, 1], color='orange', linestyle='--')
+
+plt.xticks(np.arange(0.0, 1.1, step=0.1))
+plt.xlabel("False Positive Rate", fontsize=15)
+
+plt.yticks(np.arange(0.0, 1.1, step=0.1))
+plt.ylabel("True Positive Rate", fontsize=15)
+
+plt.title('ROC Curve Analysis', fontweight='bold', fontsize=15)
+plt.legend(prop={'size': 8}, loc='lower right')
+
+plt.show()
