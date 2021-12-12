@@ -1,4 +1,3 @@
-
 from function import *
 import seaborn as sb
 from function import *
@@ -11,7 +10,7 @@ from dmba import plotDecisionTree
 import sys
 import sklearn.metrics as metrics
 from sklearn.metrics import plot_roc_curve
-%matplotlib inline
+from numpy import savetxt
 
 ## Load dataframe
 df = pd.read_csv('winequalityN.csv')
@@ -101,7 +100,7 @@ train_X, valid_X, train_y, valid_y = train_test_split(X, y, test_size=0.3, rando
 # valid_X = normalize_data(valid_X)
 
 
-# # Logistic Regression
+### Logistic Regression
 logistic_regression = LogisticRegression(penalty="l2", C=1e42, solver='liblinear', class_weight='balanced')
 logistic_regression.fit(train_X, train_y)
 
@@ -116,7 +115,7 @@ logistic_regression_prediction_train = logistic_regression.predict_proba(train_X
 logistic_regression_prediction_valid = logistic_regression.predict_proba(valid_X)[:, 1] > 0.5
 model_matrix(train_y, valid_y, logistic_regression_prediction_train, logistic_regression_prediction_valid)
 
-## Decision Tree Model
+### Decision Tree Model
 decision_tree = DecisionTreeClassifier(max_depth=4)
 decision_tree.fit(train_X, train_y)
 
@@ -135,7 +134,7 @@ decision_tree_prediction_train = decision_tree.predict(train_X)
 decision_tree_prediction_valid = decision_tree.predict(valid_X)
 model_matrix(train_y, valid_y, decision_tree_prediction_train, decision_tree_prediction_valid)
 
-## #Random forest
+###Random forest
 random_forest = RandomForestClassifier(random_state=0)
 random_forest.fit(train_X.values, train_y.values.ravel())
 
@@ -144,7 +143,7 @@ random_forest_prediction_train = random_forest.predict(train_X)
 random_forest_prediction_valid = random_forest.predict(valid_X)
 model_matrix(train_y, valid_y, random_forest_prediction_train, random_forest_prediction_valid)
 
-## Gradient Boosting
+### Gradient Boosting
 gradient_boosting = GradientBoostingClassifier(random_state=0)
 gradient_boosting.fit(train_X, train_y)
 gradient_boosting.predict(valid_X[:2])
@@ -157,7 +156,7 @@ gradient_boosting_prediction_train = gradient_boosting.predict(train_X)
 gradient_boosting_prediction_valid = gradient_boosting.predict(valid_X)
 model_matrix(train_y, valid_y, gradient_boosting_prediction_train, gradient_boosting_prediction_valid)
 
-## Baseline AUC analysis
+### Baseline AUC analysis
 # logistic_regression
 baseline_auc_analysis(train_y, logistic_regression_prediction_train, "LogisticRegression Train")
 baseline_auc_analysis(valid_y, logistic_regression_prediction_valid, "LogisticRegression Valid")
@@ -171,11 +170,11 @@ baseline_auc_analysis(train_y, gradient_boosting_prediction_train, "GradientBoos
 baseline_auc_analysis(valid_y, gradient_boosting_prediction_valid, "GradientBoostedTree Valid")
 
 ## ROC Curve Analysis
-roc_curve_analysis(random_forest, valid_X, valid_y)
-roc_curve_analysis(gradient_boosting, valid_X, valid_y)
+random_forest_roc = roc_curve_analysis(random_forest, valid_X, valid_y)
+gradient_boosting_roc = roc_curve_analysis(gradient_boosting, valid_X, valid_y)
 
 
-Classifier = [logit_reg, nb, DecisionTree]
+Classifier = [logistic_regression, decision_tree]
 result_table = pd.DataFrame(columns=['classifiers', 'fpr', 'tpr', 'auc'])
 for cls in Classifier:
     yproba = cls.predict_proba(valid_X)[:, 1]
@@ -189,6 +188,7 @@ for cls in Classifier:
                                         'tpr': tpr,
                                         'auc': auc}, ignore_index=True)
 result_table.set_index('classifiers', inplace=True)
+print(result_table)
 # result_table.fillna(0)
 fig = plt.figure(figsize=(8, 6))
 
@@ -200,9 +200,9 @@ for i in result_table.index:
              label=i)
     # label="{}, AUC={:.3f}".format(i, result_table.loc[i]['auc']))
 
-plt.plot(rf_roc.loc[0, :], rf_roc.loc[1, :], label="Random Forest")
-plt.plot(gbm_roc.loc[0, :], gbm_roc.loc[1, :], label="Gradiant Boosted Tree")
-plt.plot(nn_roc.loc[0, :], nn_roc.loc[1, :], label="Neural Network")
+plt.plot(random_forest_roc.loc[0, :], random_forest_roc.loc[1, :], label="Random Forest")
+plt.plot(gradient_boosting_roc.loc[0, :],  gradient_boosting_roc.loc[1, :], label="Gradiant Boosted Tree")
+# plt.plot(nn_roc.loc[0, :], nn_roc.loc[1, :], label="Neural Network")
 
 plt.plot([0, 1], [0, 1], color='orange', linestyle='--')
 
@@ -215,4 +215,8 @@ plt.ylabel("True Positive Rate", fontsize=15)
 plt.title('ROC Curve Analysis', fontweight='bold', fontsize=15)
 plt.legend(prop={'size': 8}, loc='lower right')
 
-plt.show()
+# plt.show()
+
+# final_prediction = logistic_regression.predict(df_duplicate[predictors])
+#
+# savetxt('testPred.csv', final_prediction, delimiter=',')

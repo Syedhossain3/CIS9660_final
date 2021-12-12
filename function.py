@@ -43,7 +43,6 @@ from sklearn.tree import export_graphviz
 from sklearn.metrics import roc_curve, auc
 import sklearn.metrics as metrics
 from sklearn.metrics import plot_roc_curve
-%matplotlib inline
 
 
 def get_missing_percentage(df):
@@ -215,4 +214,4 @@ def baseline_auc_analysis(data_frame, object_model_prediction, object_model_name
 def roc_curve_analysis(object_model_name, data_frame_x, data_frame_y):
     object_proba = object_model_name.predict_proba(data_frame_x)[:, 1]
     object_roc = roc_curve(data_frame_y, object_proba)
-    object_roc = pd.DataFrame(object_roc)
+    return pd.DataFrame(object_roc)
