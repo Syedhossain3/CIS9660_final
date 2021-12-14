@@ -124,7 +124,7 @@ def show_histogram(data_frame):
 
 ##Seaborn
 def show_seaborn(data_frame):
-    sb.pairplot(df_duplicate)
+    sb.pairplot(data_frame)
     # show graph
     plt.show()
 
@@ -163,15 +163,15 @@ def normalize_data(data_frame):
 
 
 ##Model Matrix
-def model_matrix(data_frame_train_y, data_frame_valid_y, object_train, object_valid):
-    print("Accuracy on train is:", accuracy_score(data_frame_train_y, object_train))
-    print("Accuracy on test is:", accuracy_score(data_frame_valid_y, object_valid))
-    print("Precision_score train is:", precision_score(data_frame_train_y, object_train))
-    print("Precision_score on test is:", precision_score(data_frame_valid_y, object_valid))
-    print("Recall_score on train is:", recall_score(data_frame_train_y, object_train))
-    print("Recall_score on test is:", recall_score(data_frame_valid_y, object_valid))
-    print("f1_score on train is:", f1_score(data_frame_train_y, object_train))
-    print("f1_score on test is:", f1_score(data_frame_valid_y, object_valid))
+def model_matrix(data_frame_train_y, data_frame_valid_y, object_train, object_valid, model_name):
+    print(model_name + ": accuracy on train is:", accuracy_score(data_frame_train_y, object_train))
+    print(model_name + ": accuracy on test is:", accuracy_score(data_frame_valid_y, object_valid))
+    print(model_name + ": precision_score train is:", precision_score(data_frame_train_y, object_train))
+    print(model_name + ": precision_score on test is:", precision_score(data_frame_valid_y, object_valid))
+    print(model_name + ": Recall_score on train is:", recall_score(data_frame_train_y, object_train))
+    print(model_name + ": Recall_score on test is:", recall_score(data_frame_valid_y, object_valid))
+    print(model_name + ": f1_score on train is:", f1_score(data_frame_train_y, object_train))
+    print(model_name + ": f1_score on test is:", f1_score(data_frame_valid_y, object_valid))
 
 
 ## Visualization DecisionTree
@@ -215,3 +215,47 @@ def roc_curve_analysis(object_model_name, data_frame_x, data_frame_y):
     object_proba = object_model_name.predict_proba(data_frame_x)[:, 1]
     object_roc = roc_curve(data_frame_y, object_proba)
     return pd.DataFrame(object_roc)
+
+
+##Roc curve analysis
+def roc_cure_analysis_classifier_result(classifier, valid_X, valid_y, random_forest_roc,
+                                        gradient_boosting_roc, random_forest_str, gradiant_boosted_str):
+    result_table = pd.DataFrame(columns=['classifiers', 'fpr', 'tpr', 'auc'])
+    for cls in classifier:
+        y_probability = cls.predict_proba(valid_X)[:, 1]
+        # plot_roc_curve(cls, valid_X, valid_y)
+        fpr, tpr, thresholds = roc_curve(valid_y, y_probability)
+
+        auc = roc_auc_score(valid_y, y_probability)
+
+        result_table = result_table.append({'classifiers': cls,
+                                            'fpr': fpr,
+                                            'tpr': tpr,
+                                            'auc': auc}, ignore_index=True)
+    result_table.set_index('classifiers', inplace=True)
+    fig = plt.figure(figsize=(8, 6))
+
+    # print(classifier_result_table.head())
+
+    for i in result_table.index:
+        plt.plot(result_table.loc[i]['fpr'],
+                 result_table.loc[i]['tpr'],
+                 label=i)
+        # label="{}, AUC={:.3f}".format(i, result_table.loc[i]['auc']))
+
+    plt.plot(random_forest_roc.loc[0, :], random_forest_roc.loc[1, :], label=random_forest_str)
+    plt.plot(gradient_boosting_roc.loc[0, :], gradient_boosting_roc.loc[1, :], label=gradiant_boosted_str)
+
+    plt.plot([0, 1], [0, 1], color='orange', linestyle='--')
+
+    plt.xticks(np.arange(0.0, 1.1, step=0.1))
+    plt.xlabel("False Positive Rate", fontsize=15)
+
+    plt.yticks(np.arange(0.0, 1.1, step=0.1))
+    plt.ylabel("True Positive Rate", fontsize=15)
+
+    plt.title('ROC Curve Analysis', fontweight='bold', fontsize=15)
+    plt.legend(prop={'size': 8}, loc='lower right')
+
+    plt.show()
+
