@@ -7,6 +7,7 @@ from ast import Index
 from json import encoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MinMaxScaler
+from lime import lime_tabular
 import matplotlib
 import model2 as model2
 import pandas as pd
@@ -43,6 +44,12 @@ from sklearn.tree import export_graphviz
 from sklearn.metrics import roc_curve, auc
 import sklearn.metrics as metrics
 from sklearn.metrics import plot_roc_curve
+import h2o
+from h2o.estimators import H2ORandomForestEstimator
+from h2o.estimators import H2OGradientBoostingEstimator
+from h2o.grid.grid_search import H2OGridSearch
+import math
+
 
 
 def get_missing_percentage(df):
@@ -259,3 +266,98 @@ def roc_cure_analysis_classifier_result(classifier, valid_X, valid_y, random_for
 
     plt.show()
 
+
+def gradient_boosting(df):
+    import h2o
+    from h2o.estimators import H2OGradientBoostingEstimator
+    h2o.init(nthreads=-1, min_mem_size_GB=8)
+
+    # Dataset:
+    wh2o = h2o.H2OFrame(df)
+    train, valid = wh2o.split_frame(ratios=[.8], seed=-1)
+
+    # Set the predictors and response; set the factors:
+    wh2o['points'] = wh2o['points'].asfactor()
+    predictors = ['country', 'points', 'province', 'variety', 'winery', 'region_1']
+    response = "log_price_bins"
+    # Build and train the model:
+    w_gbm = H2OGradientBoostingEstimator(nfolds=100,
+                                         seed=-1,
+                                         distribution='multinomial',
+                                         max_depth=10,
+                                         sample_rate=0.6000000000000001,
+                                         learn_rate=0.06,
+                                         col_sample_rate=1.0,
+                                         auc_type='WEIGHTED_OVR',
+                                         max_runtime_secs=600
+                                         )
+
+    w_gbm.train(x=predictors, y=response, training_frame=train)
+    # Eval performance:
+    perf = w_gbm.model_performance()
+    # Generate predictions on a test set (if necessary):
+    pred = w_gbm.predict(valid)
+    return valid, pred
+
+
+def create_heatmap(x, y, size, color):
+    # Mapping from column names to integer coordinates
+    x_labels = [v for v in sorted(x.unique())]
+    y_labels = [v for v in sorted(y.unique())]
+    x_to_num = {p[1]: p[0] for p in enumerate(x_labels)}
+    y_to_num = {p[1]: p[0] for p in enumerate(y_labels)}
+
+    size_scale = 200
+
+    plot_grid = plt.GridSpec(1, 15, hspace=0.2, wspace=0.1)  # Setup a 1x15 grid
+    ax = plt.subplot(plot_grid[:, :-1])  # Use the leftmost 14 columns of the grid for the main plot
+
+    ax.scatter(
+        x=x.map(x_to_num),  # Use mapping for x
+        y=y.map(y_to_num),  # Use mapping for y
+        s=size * size_scale,  # Vector of square sizes, proportional to size parameter
+        c=color.apply(value_to_color),  # Vector of square colors, mapped to color palette
+        marker='s'  # Use square as scatterplot marker
+    )
+
+    ax.set_xticks([x_to_num[v] for v in x_labels])
+    ax.set_xticklabels(x_labels, rotation=45, horizontalalignment='right')
+    ax.set_yticks([y_to_num[v] for v in y_labels])
+    ax.set_yticklabels(y_labels)
+
+    # Add color legend on the right side of the plot
+    ax = plt.subplot(plot_grid[:, -1])  # Use the rightmost column of the plot
+
+    col_x = [0] * len(palette)  # Fixed x coordinate for the bars
+    bar_y = np.linspace(color_min, color_max, n_colors)  # y coordinates for each of the n_colors bars
+
+    bar_height = bar_y[1] - bar_y[0]
+    ax.barh(
+        y=bar_y,
+        width=[5] * len(palette),  # Make bars 5 units wide
+        left=col_x,  # Make bars start at 0
+        height=bar_height,
+        color=palette,
+        linewidth=0
+    )
+    ax.set_xlim(1, 2)  # Bars are going from 0 to 5, so lets crop the plot somewhere in the middle
+    ax.grid(False)  # Hide grid
+    ax.set_facecolor('white')  # Make background white
+    ax.set_xticks([])  # Remove horizontal ticks
+    ax.set_yticks(np.linspace(min(bar_y), max(bar_y), 3))  # Show vertical ticks for min, middle and max
+    ax.yaxis.tick_right()  # Show vertical ticks on the right
+
+    n_colors = 256  # Use 256 colors for the diverging color palette
+    palette = sns.diverging_palette(20, 220, n=n_colors)  # Create the palette
+    color_min, color_max = [-1, 1]  # Range of values that will be mapped to the palette, i.e. min and max possible correlation
+
+
+## LIME
+def lime_data_visualization(data_frame_train_X, data_frame_valid_X, model_name, output_file):
+    explainer = lime_tabular.LimeTabularExplainer(training_data=np.array(train_X),
+                                             mode="regression",
+                                             feature_names=data_frame_train_X.columns,
+                                             categorical_features=[0])
+    exp = explainer.explain_instance(data_row=data_frame_valid_X.iloc[4],
+                                predict_fn=model_name.predict)
+    exp.save_to_file(output_file)

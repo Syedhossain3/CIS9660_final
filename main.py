@@ -1,7 +1,10 @@
+import matplotlib.pyplot
+from numpy import savetxt
 from function import *
 from function import *
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
+
 
 ## Load dataframe
 df = pd.read_csv('winequalityN.csv')
@@ -32,7 +35,7 @@ df_duplicate = convert_columns_to_dummy_data(df_duplicate, "type")
 ## We saw that there few null value. we convert them with mean value
 df_duplicate.update(df_duplicate.fillna(df_duplicate.mean()))
 
-##REname column name
+##Rename columns name
 df_duplicate.columns = df_duplicate.columns.str.replace(' ', '_')
 
 ##Finding error base on Heap map. check if more than .7
@@ -197,3 +200,7 @@ decision_tree_roc = roc_curve_analysis(decision_tree, valid_X, valid_y)
 
 classifier = [logistic_regression, decision_tree, naive_bayes]
 roc_cure_analysis_classifier_result(classifier, valid_X, valid_y, random_forest_roc, gradient_boosting_roc, "Random Forest", "Gradiant Boosted")
+
+##LIME with gradient_boosting
+lime_data_visualization(train_X, valid_X, gradient_boosting, "lime.html")
+
